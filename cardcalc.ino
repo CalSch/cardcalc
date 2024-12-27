@@ -110,7 +110,7 @@ void onKeyPress(char key) {
     X += key - '0'; // add the value represented by the character (kinda weird)
     // todo: make this work with decimals
     break;
-  case 'p': // pop
+  case CALC_KEY_POP: // pop
     shiftDown();
     break;
   case CALC_KEY_ADD:

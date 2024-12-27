@@ -11,6 +11,8 @@
 #define TEXT_COLS SCREEN_WIDTH/FONT_WIDTH
 #define TEXT_HEIGHT SCREEN_HEIGHT/FONT_HEIGHT
 
+#define MODE_STRING_SIZE 2
+
 std::vector<char> lastKeysPressed;
 
 float X = 0;
@@ -40,6 +42,14 @@ void printNumber(float num, int y) {
 
 }
 
+char* get_mode_string() {
+  char* text = (char*)malloc(SCREEN_WIDTH/FONT_WIDTH);
+  sprintf(text,"Mode: %c",
+    decimalMode ? 'D' : 'd'
+  );
+  return text;
+}
+
 void updateScreen() {
   M5Cardputer.Display.clearDisplay();
   M5Cardputer.Display.setTextColor(GREEN);
@@ -56,8 +66,10 @@ void updateScreen() {
 
   M5Cardputer.Display.fillRect(0,SCREEN_HEIGHT-FONT_HEIGHT,SCREEN_WIDTH,FONT_HEIGHT,GREEN);
   M5Cardputer.Display.setTextColor(BLACK);
-  M5Cardputer.Display.drawString("hello :)",0,SCREEN_HEIGHT-FONT_HEIGHT);
-
+  // M5Cardputer.Display.drawString(":)",0,SCREEN_HEIGHT-FONT_HEIGHT);
+  M5Cardputer.Display.drawString(get_mode_string(),0,SCREEN_HEIGHT-FONT_HEIGHT);
+  // Serial.print("mode: ");
+  // Serial.println(get_mode_string());
 
 }
 
@@ -162,7 +174,7 @@ void onDeletePress() {
 }
 
 void loop() {
-  Serial.println("loop");
+  // Serial.println("loop");
   M5Cardputer.update();
   // put your main code here, to run repeatedly:
   // print("hello world! ");

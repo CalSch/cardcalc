@@ -21,6 +21,7 @@ float Z = 20;
 float T = 142;
 
 bool decimalMode = false;
+char chord = 0;
 
 int vectorFind(std::vector<char>v, char c) {
   for (int i=0;i<v.size();i++) {
@@ -44,8 +45,9 @@ void printNumber(float num, int y) {
 
 char* get_mode_string() {
   char* text = (char*)malloc(SCREEN_WIDTH/FONT_WIDTH);
-  sprintf(text,"Mode: %c",
-    decimalMode ? 'D' : 'd'
+  sprintf(text,"Mode: [%c] Chord: '%c'",
+    decimalMode ? 'D' : 'd',
+    (chord!=0) ? chord : ' '
   );
   return text;
 }
@@ -127,8 +129,23 @@ void onKeyPress(char key) {
   case '7':
   case '8':
   case '9':
-    X *= 10; // shift to the right
-    X += key - '0'; // add the value represented by the character (kinda weird)
+    if (!decimalMode) {
+      int whole = (int)X;
+      X -= whole; // extract whole part of X
+      whole *= 10; // shift to the left
+      whole += key - '0'; // add the value represented by the character (kinda weird)
+      X += whole; // put the whole part back in X
+    } else {
+      float fract = X - (int)X;
+      Serial.print("fract: ");
+      Serial.println(fract);
+      X -= fract; // extract fractional part out of X
+      fract /= 10; // shift to the right
+      fract += (float)(key - '0')/10.f; // add the value represented by the character (kinda weird)
+      Serial.print("new fract: ");
+      Serial.println(fract);
+      X += fract; // put the fractional part back in X
+    }
     // todo: make this work with decimals
     break;
   case CALC_KEY_POP: // pop

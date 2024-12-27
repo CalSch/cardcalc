@@ -42,6 +42,7 @@ void printNumber(float num, int y) {
 
 void updateScreen() {
   M5Cardputer.Display.clearDisplay();
+  M5Cardputer.Display.setTextColor(GREEN);
   M5Cardputer.Display.drawString("T=",0,FONT_HEIGHT*0);
   printNumber(T,FONT_HEIGHT*0);
   M5Cardputer.Display.drawString("Z=",0,FONT_HEIGHT*1);
@@ -50,6 +51,14 @@ void updateScreen() {
   printNumber(Y,FONT_HEIGHT*2);
   M5Cardputer.Display.drawString("X=",0,FONT_HEIGHT*3);
   printNumber(X,FONT_HEIGHT*3);
+
+  M5Cardputer.Display.fillRect(0,FONT_HEIGHT*4,SCREEN_WIDTH,1,GREEN);
+
+  M5Cardputer.Display.fillRect(0,SCREEN_HEIGHT-FONT_HEIGHT,SCREEN_WIDTH,FONT_HEIGHT,GREEN);
+  M5Cardputer.Display.setTextColor(BLACK);
+  M5Cardputer.Display.drawString("hello :)",0,SCREEN_HEIGHT-FONT_HEIGHT);
+
+
 }
 
 void clearAll() {
@@ -136,6 +145,13 @@ void onKeyPress(char key) {
   case CALC_KEY_DECIMAL_TOGGLE:
     decimalMode = !decimalMode;
     break;
+  case CALC_KEY_CLEAR:
+    X = 0;
+    break;
+  case CALC_KEY_CLEAR_ALL:
+    clearAll();
+    break;
+    
   };
 }
 void onEnterPress() {

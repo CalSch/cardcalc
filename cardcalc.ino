@@ -1,4 +1,5 @@
 #include "M5Cardputer.h"
+#include "keys.h"
 #include <cstring>
 #include <vector>
 #include <ctype.h>
@@ -74,6 +75,7 @@ void afterOperation() {
   Y=Z;
   Z=T;
   T=0;
+  decimalMode = false;
 }
 
 void setup() {
@@ -104,36 +106,43 @@ void onKeyPress(char key) {
   case '7':
   case '8':
   case '9':
-    X *= 10;
-    X += key - '0';
+    X *= 10; // shift to the right
+    X += key - '0'; // add the value represented by the character (kinda weird)
+    // todo: make this work with decimals
     break;
   case 'p': // pop
     shiftDown();
     break;
-  case '+':
+  case CALC_KEY_ADD:
     X += Y;
     afterOperation();
     break;
-  case '-':
-    X -= Y;
+  case CALC_KEY_SUBTRACT:
+    X = Y - X;
     afterOperation();
     break;
-  case '*':
+  case CALC_KEY_MULTIPLY:
     X *= Y;
     afterOperation();
     break;
-  case '/':
-    X /= Y;
+  case CALC_KEY_DIVIDE:
+    X = Y / X;
     afterOperation();
     break;
-  case
+  case CALC_KEY_POWER:
+    X = pow(Y, X);
+    afterOperation();
+    break;
+  case CALC_KEY_DECIMAL_TOGGLE:
+    decimalMode = !decimalMode;
+    break;
   };
 }
 void onEnterPress() {
   shiftUp();
 }
 void onDeletePress() {
-  X = int(X/10);
+  X = int(X/10); // todo: make this work with decimals
 }
 
 void loop() {

@@ -14,14 +14,16 @@
 #define PI 3.14159265358979323
 #define E 2.71828182845904523
 
+#define DECIMAL_TYPE double
+
 #define MODE_STRING_SIZE 2
 
 std::vector<char> lastKeysPressed;
 
-float X = 0;
-float Y = 1;
-float Z = 20;
-float T = 142;
+DECIMAL_TYPE X = 0;
+DECIMAL_TYPE Y = 0;
+DECIMAL_TYPE Z = 0;
+DECIMAL_TYPE T = 0;
 
 bool decimalMode = false;
 char chord = 0;
@@ -34,7 +36,7 @@ int vectorFind(std::vector<char>v, char c) {
   return -1;
 }
 
-void printNumber(float num, int y) {
+void printNumber(DECIMAL_TYPE num, int y) {
   int len = snprintf(NULL, 0, "%f", num);
   char* text = (char*)malloc(len + 1);
   snprintf(text, len + 1, "%f", num);
@@ -148,18 +150,18 @@ void onKeyPress(char key) {
     case '8':
     case '9':
       if (!decimalMode) {
-        int whole = (int)X;
+        DECIMAL_TYPE whole = round(X);
         X -= whole; // extract whole part of X
         whole *= 10; // shift to the left
         whole += key - '0'; // add the value represented by the character (kinda weird)
         X += whole; // put the whole part back in X
       } else {
-        float fract = X - (int)X;
+        DECIMAL_TYPE fract = X - round(X);
         Serial.print("fract: ");
         Serial.println(fract);
         X -= fract; // extract fractional part out of X
         fract /= 10; // shift to the right
-        fract += (float)(key - '0')/10.f; // add the value represented by the character (kinda weird)
+        fract += (DECIMAL_TYPE)(key - '0')/10.f; // add the value represented by the character (kinda weird)
         Serial.print("new fract: ");
         Serial.println(fract);
         X += fract; // put the fractional part back in X
@@ -208,7 +210,7 @@ void onEnterPress() {
   shiftUp();
 }
 void onDeletePress() {
-  X = int(X/10); // todo: make this work with decimals
+  X = round(X/10); // todo: make this work with decimals
 }
 
 void loop() {

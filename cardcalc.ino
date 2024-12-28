@@ -11,6 +11,9 @@
 #define TEXT_COLS SCREEN_WIDTH/FONT_WIDTH
 #define TEXT_HEIGHT SCREEN_HEIGHT/FONT_HEIGHT
 
+#define PI 3.14159265358979323
+#define E 2.71828182845904523
+
 #define MODE_STRING_SIZE 2
 
 std::vector<char> lastKeysPressed;
@@ -118,70 +121,88 @@ void setup() {
 }
 
 void onKeyPress(char key) {
-  switch (key) {
-  case '0':
-  case '1':
-  case '2':
-  case '3':
-  case '4':
-  case '5':
-  case '6':
-  case '7':
-  case '8':
-  case '9':
-    if (!decimalMode) {
-      int whole = (int)X;
-      X -= whole; // extract whole part of X
-      whole *= 10; // shift to the left
-      whole += key - '0'; // add the value represented by the character (kinda weird)
-      X += whole; // put the whole part back in X
-    } else {
-      float fract = X - (int)X;
-      Serial.print("fract: ");
-      Serial.println(fract);
-      X -= fract; // extract fractional part out of X
-      fract /= 10; // shift to the right
-      fract += (float)(key - '0')/10.f; // add the value represented by the character (kinda weird)
-      Serial.print("new fract: ");
-      Serial.println(fract);
-      X += fract; // put the fractional part back in X
+  if (chord != 0) { // Handle chords
+    switch (chord) {
+      case CALC_KEY_CHORD_CONSTANTS:
+        switch (key) {
+          case 'p':
+            X = PI;
+            break;
+          case 'e':
+            X = E;
+            break;
+        };
+        break;
     }
-    // todo: make this work with decimals
-    break;
-  case CALC_KEY_POP: // pop
-    shiftDown();
-    break;
-  case CALC_KEY_ADD:
-    X += Y;
-    afterOperation();
-    break;
-  case CALC_KEY_SUBTRACT:
-    X = Y - X;
-    afterOperation();
-    break;
-  case CALC_KEY_MULTIPLY:
-    X *= Y;
-    afterOperation();
-    break;
-  case CALC_KEY_DIVIDE:
-    X = Y / X;
-    afterOperation();
-    break;
-  case CALC_KEY_POWER:
-    X = pow(Y, X);
-    afterOperation();
-    break;
-  case CALC_KEY_DECIMAL_TOGGLE:
-    decimalMode = !decimalMode;
-    break;
-  case CALC_KEY_CLEAR:
-    X = 0;
-    break;
-  case CALC_KEY_CLEAR_ALL:
-    clearAll();
-    break;
-    
-  };
+    chord = 0;
+  } else {
+    switch (key) {
+    case '0':
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+    case '9':
+      if (!decimalMode) {
+        int whole = (int)X;
+        X -= whole; // extract whole part of X
+        whole *= 10; // shift to the left
+        whole += key - '0'; // add the value represented by the character (kinda weird)
+        X += whole; // put the whole part back in X
+      } else {
+        float fract = X - (int)X;
+        Serial.print("fract: ");
+        Serial.println(fract);
+        X -= fract; // extract fractional part out of X
+        fract /= 10; // shift to the right
+        fract += (float)(key - '0')/10.f; // add the value represented by the character (kinda weird)
+        Serial.print("new fract: ");
+        Serial.println(fract);
+        X += fract; // put the fractional part back in X
+      }
+      // todo: make this work with decimals
+      break;
+    case CALC_KEY_POP: // pop
+      shiftDown();
+      break;
+    case CALC_KEY_ADD:
+      X += Y;
+      afterOperation();
+      break;
+    case CALC_KEY_SUBTRACT:
+      X = Y - X;
+      afterOperation();
+      break;
+    case CALC_KEY_MULTIPLY:
+      X *= Y;
+      afterOperation();
+      break;
+    case CALC_KEY_DIVIDE:
+      X = Y / X;
+      afterOperation();
+      break;
+    case CALC_KEY_POWER:
+      X = pow(Y, X);
+      afterOperation();
+      break;
+    case CALC_KEY_DECIMAL_TOGGLE:
+      decimalMode = !decimalMode;
+      break;
+    case CALC_KEY_CLEAR:
+      X = 0;
+      break;
+    case CALC_KEY_CLEAR_ALL:
+      clearAll();
+      break;
+    case CALC_KEY_CHORD_CONSTANTS:
+      chord = key;
+      break;
+    };
+  }
 }
 void onEnterPress() {
   shiftUp();

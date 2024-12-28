@@ -17,6 +17,14 @@
 #define DECIMAL_TYPE double
 
 #define MODE_STRING_SIZE 2
+#define MENU_LINES 3
+#define MENU_Y FONT_HEIGHT*4
+
+struct MenuItem {
+  char* name;
+  char* value;
+  bool noValue;
+};
 
 std::vector<char> lastKeysPressed;
 
@@ -26,7 +34,11 @@ DECIMAL_TYPE Z = 0;
 DECIMAL_TYPE T = 0;
 
 bool decimalMode = false;
+bool showingMenu = false;
+MenuItem* menu;
+int menuItems = 0;
 char chord = 0;
+
 
 int vectorFind(std::vector<char>v, char c) {
   for (int i=0;i<v.size();i++) {
@@ -57,6 +69,62 @@ char* get_mode_string() {
   return text;
 }
 
+void initMenu() {
+  menu = {};
+  menuItems=0;
+}
+void addMenuItem(MenuItem item) {
+  menuItems++;
+  MenuItem* newMenu = (MenuItem*)calloc(menuItems,sizeof(MenuItem));
+  // memcpy(newMenu,menu,sizeof(menu));
+  for (int i=0;i<menuItems-1;i++)
+    newMenu[i]=menu[i];
+  newMenu[menuItems-1] = item;
+  menu = newMenu;
+}
+void addMenuItem(char c, char* str) {
+  char *ptr = (char*)malloc(2*sizeof(char));
+  ptr[0] = c;
+  ptr[1] = '\0';
+  addMenuItem((MenuItem){ptr,str,false});
+}
+void addMenuItem(char* name, char* value) {
+  addMenuItem((MenuItem){name,value,false});
+}
+void addMenuItem(char* name) {
+  addMenuItem((MenuItem){name,"",true});
+}
+void drawMenu() {
+  Serial.println("drawing menu");
+  M5Cardputer.Display.setTextColor(GREEN);
+  int cols = ceil((float)menuItems/(float)MENU_LINES);
+
+  int x=0;
+  // Go through each column, find max name and value widths, and draw
+  for (int col=0;col<cols;col++) {
+    int nameWidth = 0;
+    int valueWidth = 0;
+    // Find maximum name and value widths
+    for (int i=0;i<MENU_LINES;i++) {
+      int idx = col*MENU_LINES + i;
+      if (idx >= menuItems) continue;
+      MenuItem item = menu[idx];
+      if (item.noValue) continue;
+      if (strlen(item.name) > nameWidth) nameWidth = strlen(item.name);
+      if (strlen(item.value) > valueWidth) valueWidth = strlen(item.value);
+    }
+    // Now draw them
+    for (int i=0;i<MENU_LINES;i++) {
+      int idx = col*MENU_LINES + i;
+      if (idx >= menuItems) continue;
+      MenuItem item = menu[idx];
+      M5Cardputer.Display.drawString(item.name,x*FONT_WIDTH,MENU_Y+i*FONT_HEIGHT);
+      M5Cardputer.Display.drawString(item.value,(x+1+nameWidth)*FONT_WIDTH,MENU_Y+i*FONT_HEIGHT);
+    }
+    x += nameWidth + 1 + valueWidth + 1;
+  }
+}
+
 void updateScreen() {
   M5Cardputer.Display.clearDisplay();
   M5Cardputer.Display.setTextColor(GREEN);
@@ -74,10 +142,10 @@ void updateScreen() {
   M5Cardputer.Display.fillRect(0,SCREEN_HEIGHT-FONT_HEIGHT,SCREEN_WIDTH,FONT_HEIGHT,GREEN);
   M5Cardputer.Display.setTextColor(BLACK);
   // M5Cardputer.Display.drawString(":)",0,SCREEN_HEIGHT-FONT_HEIGHT);
-  M5Cardputer.Display.drawString(get_mode_string(),0,SCREEN_HEIGHT-FONT_HEIGHT);
+  M5Cardputer.Display.drawString(get_mode_string(),1,SCREEN_HEIGHT-FONT_HEIGHT);
   // Serial.print("mode: ");
   // Serial.println(get_mode_string());
-
+  if (showingMenu) drawMenu();
 }
 
 void clearAll() {
@@ -127,16 +195,17 @@ void onKeyPress(char key) {
     switch (chord) {
       case CALC_KEY_CHORD_CONSTANTS:
         switch (key) {
-          case 'p':
+          case CALC_KEY_CONSTANT_PI:
             X = PI;
             break;
-          case 'e':
+          case CALC_KEY_CONSTANT_E:
             X = E;
             break;
         };
         break;
     }
     chord = 0;
+    showingMenu = false;
   } else {
     switch (key) {
     case '0':
@@ -168,9 +237,15 @@ void onKeyPress(char key) {
       }
       // todo: make this work with decimals
       break;
-    case CALC_KEY_POP: // pop
+    case CALC_KEY_POP:
       shiftDown();
       break;
+    case CALC_KEY_SWAP: {
+      DECIMAL_TYPE temp = X;
+      X = Y;
+      Y = temp;
+      break;
+    }
     case CALC_KEY_ADD:
       X += Y;
       afterOperation();
@@ -202,6 +277,11 @@ void onKeyPress(char key) {
       break;
     case CALC_KEY_CHORD_CONSTANTS:
       chord = key;
+      showingMenu = true;
+      initMenu();
+      addMenuItem("Constants");
+      addMenuItem(CALC_KEY_CONSTANT_PI,"pi");
+      addMenuItem(CALC_KEY_CONSTANT_E,"e");
       break;
     };
   }

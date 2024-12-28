@@ -34,10 +34,13 @@ DECIMAL_TYPE Z = 0;
 DECIMAL_TYPE T = 0;
 
 bool decimalMode = false;
+bool usingRadians = true;
+
+char chord = 0;
+
 bool showingMenu = false;
 MenuItem* menu;
 int menuItems = 0;
-char chord = 0;
 
 
 int vectorFind(std::vector<char>v, char c) {
@@ -203,6 +206,18 @@ void onKeyPress(char key) {
             break;
         };
         break;
+      case CALC_KEY_CHORD_TRIG:
+        switch (key) {
+          case CALC_KEY_TRIG_SINE:
+            X = sin(X);
+            break;
+          case CALC_KEY_TRIG_COSINE:
+            X = cos(X);
+            break;
+          case CALC_KEY_TRIG_TANGENT:
+            X = tan(X);
+            break;
+        }
     }
     chord = 0;
     showingMenu = false;
@@ -282,6 +297,15 @@ void onKeyPress(char key) {
       addMenuItem("Constants");
       addMenuItem(CALC_KEY_CONSTANT_PI,"pi");
       addMenuItem(CALC_KEY_CONSTANT_E,"e");
+      break;
+    case CALC_KEY_CHORD_TRIG:
+      chord = key;
+      showingMenu = true;
+      initMenu();
+      addMenuItem("Trigonometry");
+      addMenuItem(CALC_KEY_TRIG_SINE,"sin");
+      addMenuItem(CALC_KEY_TRIG_COSINE,"cos");
+      addMenuItem(CALC_KEY_TRIG_TANGENT,"tan");
       break;
     };
   }

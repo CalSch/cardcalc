@@ -5,6 +5,7 @@
 #define CALC_KEY_MULTIPLY '*'
 #define CALC_KEY_DIVIDE   '/'
 #define CALC_KEY_POWER    '^'
+#define CALC_KEY_MODULUS  '%'
 
 // Misc operations
 #define CALC_KEY_CLEAR 'c'

@@ -287,6 +287,11 @@ void onKeyPress(char key) {
       X = pow(Y, X);
       afterOperation();
       break;
+    case CALC_KEY_MODULUS: {
+      X = fmod(Y, X);
+      afterOperation();
+      break;
+    }
     case CALC_KEY_DECIMAL_TOGGLE:
       decimalMode = !decimalMode;
       break;

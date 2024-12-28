@@ -14,9 +14,10 @@
 #define PI 3.14159265358979323
 #define E 2.71828182845904523
 
+#define ANGLE_CONVERT (usingRadians ? 1 : (PI/180.0))
+
 #define DECIMAL_TYPE double
 
-#define MODE_STRING_SIZE 2
 #define MENU_LINES 3
 #define MENU_Y FONT_HEIGHT*4
 
@@ -65,8 +66,9 @@ void printNumber(DECIMAL_TYPE num, int y) {
 
 char* get_mode_string() {
   char* text = (char*)malloc(SCREEN_WIDTH/FONT_WIDTH);
-  sprintf(text,"Mode: [%c] Chord: '%c'",
-    decimalMode ? 'D' : 'd',
+  sprintf(text,"Mode: [%s%s] Chord: '%c'",
+    decimalMode ? "DEC " : "",
+    usingRadians ? "RAD" : "DEG",
     (chord!=0) ? chord : ' '
   );
   return text;
@@ -112,7 +114,11 @@ void drawMenu() {
       int idx = col*MENU_LINES + i;
       if (idx >= menuItems) continue;
       MenuItem item = menu[idx];
-      if (item.noValue) continue;
+      if (item.noValue) {
+        if (strlen(item.name)>(nameWidth+1+valueWidth+1))
+          valueWidth = strlen(item.name);
+        continue;
+      }
       if (strlen(item.name) > nameWidth) nameWidth = strlen(item.name);
       if (strlen(item.value) > valueWidth) valueWidth = strlen(item.value);
     }
@@ -209,13 +215,13 @@ void onKeyPress(char key) {
       case CALC_KEY_CHORD_TRIG:
         switch (key) {
           case CALC_KEY_TRIG_SINE:
-            X = sin(X);
+            X = sin(X*ANGLE_CONVERT);
             break;
           case CALC_KEY_TRIG_COSINE:
-            X = cos(X);
+            X = cos(X*ANGLE_CONVERT);
             break;
           case CALC_KEY_TRIG_TANGENT:
-            X = tan(X);
+            X = tan(X*ANGLE_CONVERT);
             break;
         }
     }
@@ -283,6 +289,9 @@ void onKeyPress(char key) {
       break;
     case CALC_KEY_DECIMAL_TOGGLE:
       decimalMode = !decimalMode;
+      break;
+    case CALC_KEY_ANGLE_TOGGLE:
+      usingRadians = !usingRadians;
       break;
     case CALC_KEY_CLEAR:
       X = 0;

@@ -34,6 +34,7 @@ const char* NUMBER_FORMAT_NAMES[] = {"DEC","HEX","BIN"};
 #define BINARY_DIGITS 16
 
 #define CURRENT_NUMBER_FORMAT numberFormat==DECIMAL ? DECIMAL_FORMAT : (numberFormat==HEX ? HEX_FORMAT : "uh oh")
+#define CURRENT_BASE numberFormat==DECIMAL ? 10 : (numberFormat==HEX ? 16 : (numberFormat == BINARY ? 2 : 0))
 
 struct MenuItem {
   char* name;
@@ -67,6 +68,14 @@ int vectorFind(std::vector<char> v, char c) {
   return -1;
 }
 
+NUMBER_TYPE factorial(int n) {
+  NUMBER_TYPE f = 1;
+  for (int i=1; i<=n; ++i)
+    f *= (NUMBER_TYPE)i;
+  return f;
+}
+
+
 void printNumber(NUMBER_TYPE num, int y) {
   if (numberFormat == BINARY) {
     char text[BINARY_DIGITS+1];
@@ -91,8 +100,8 @@ void printNumber(NUMBER_TYPE num, int y) {
 
 char* get_mode_string() {
   char* text = (char*)malloc(SCREEN_WIDTH/FONT_WIDTH);
-  sprintf(text,"%s%s %s Chord: '%c'",
-    decimalMode ? "DEC " : "",
+  sprintf(text,"%s %s %s Chord: '%c'",
+    decimalMode ? "D" : "W",
     usingRadians ? "RAD" : "DEG",
     NUMBER_FORMAT_NAMES[numberFormat],
     (chord!=0) ? chord : ' '
@@ -265,11 +274,28 @@ void onKeyPress(char key) {
             X = (int)Y ^ (int)X;
             afterOperation();
             break;
+          case CALC_KEY_BITWISE_NOT:
+            X = ~((int)X);
+            break;
           case CALC_KEY_BITWISE_SHIFT_LEFT:
             X = (int)X << 1;
             break;
           case CALC_KEY_BITWISE_SHIFT_RIGHT:
             X = (int)X >> 1;
+            break;
+        }
+        break;
+      case CALC_KEY_CHORD_LOG:
+        switch (key) {
+          case CALC_KEY_LOG_10:
+            X = log10(X);
+            break;
+          case CALC_KEY_LOG_NATURAL:
+            X = log(X);
+            break;
+          case CALC_KEY_LOG_X:
+            X = log(Y) / log(X);
+            afterOperation();
             break;
         }
         break;
@@ -289,13 +315,13 @@ void onKeyPress(char key) {
     case '8':
     case '9':
       if (!decimalMode) {
-        NUMBER_TYPE whole = round(X);
+        NUMBER_TYPE whole = floor(X);
         X -= whole; // extract whole part of X
-        whole *= 10; // shift to the left
+        whole *= CURRENT_BASE; // shift to the left
         whole += key - '0'; // add the value represented by the character (kinda weird)
         X += whole; // put the whole part back in X
       } else {
-        NUMBER_TYPE fract = X - round(X);
+        NUMBER_TYPE fract = X - floor(X);
         Serial.print("fract: ");
         Serial.println(fract);
         X -= fract; // extract fractional part out of X
@@ -341,6 +367,9 @@ void onKeyPress(char key) {
       afterOperation();
       break;
     }
+    case CALC_KEY_FACTORIAL:
+      X = (NUMBER_TYPE)factorial((int)X);
+      break;
     case CALC_KEY_DECIMAL_TOGGLE:
       decimalMode = !decimalMode;
       break;
@@ -381,8 +410,18 @@ void onKeyPress(char key) {
       addMenuItem(CALC_KEY_BITWISE_AND,"and");
       addMenuItem(CALC_KEY_BITWISE_OR,"or");
       addMenuItem(CALC_KEY_BITWISE_XOR,"xor");
+      addMenuItem(CALC_KEY_BITWISE_NOT,"not");
       addMenuItem(CALC_KEY_BITWISE_SHIFT_LEFT,"shift left");
       addMenuItem(CALC_KEY_BITWISE_SHIFT_RIGHT,"shift right");
+      break;
+    case CALC_KEY_CHORD_LOG:
+      chord = key;
+      showingMenu = true;
+      initMenu();
+      addMenuItem("Log");
+      addMenuItem(CALC_KEY_LOG_10,"log(X,10)");
+      addMenuItem(CALC_KEY_LOG_NATURAL,"ln(X)");
+      addMenuItem(CALC_KEY_LOG_X,"log(Y,X)");
       break;
     };
   }
@@ -391,7 +430,7 @@ void onEnterPress() {
   shiftUp();
 }
 void onDeletePress() {
-  X = round(X/10); // todo: make this work with decimals
+  X = floor(X/10); // todo: make this work with decimals
 }
 
 void loop() {

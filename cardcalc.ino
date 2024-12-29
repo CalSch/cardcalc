@@ -12,14 +12,28 @@
 #define TEXT_HEIGHT SCREEN_HEIGHT/FONT_HEIGHT
 
 #define PI 3.14159265358979323
-#define E 2.71828182845904523
+#define E  2.71828182845904523
 
 #define ANGLE_CONVERT (usingRadians ? 1 : (PI/180.0))
 
-#define DECIMAL_TYPE double
+#define NUMBER_TYPE double
 
 #define MENU_LINES 3
 #define MENU_Y FONT_HEIGHT*4
+
+// Format IDs
+#define DECIMAL 0
+#define HEX 1
+#define BINARY 2
+#define NUMBER_FORMATS 3 // remember to update this count after adding a new format
+const char* NUMBER_FORMAT_NAMES[] = {"DEC","HEX","BIN"};
+
+#define DECIMAL_FORMAT "%lf" // either "%f" or "%e", whichever is shortest
+#define HEX_FORMAT "0x%X"
+
+#define BINARY_DIGITS 16
+
+#define CURRENT_NUMBER_FORMAT numberFormat==DECIMAL ? DECIMAL_FORMAT : (numberFormat==HEX ? HEX_FORMAT : "uh oh")
 
 struct MenuItem {
   char* name;
@@ -29,13 +43,14 @@ struct MenuItem {
 
 std::vector<char> lastKeysPressed;
 
-DECIMAL_TYPE X = 0;
-DECIMAL_TYPE Y = 0;
-DECIMAL_TYPE Z = 0;
-DECIMAL_TYPE T = 0;
+NUMBER_TYPE X = 0;
+NUMBER_TYPE Y = 0;
+NUMBER_TYPE Z = 0;
+NUMBER_TYPE T = 0;
 
 bool decimalMode = false;
 bool usingRadians = true;
+int numberFormat = DECIMAL;
 
 char chord = 0;
 
@@ -44,7 +59,7 @@ MenuItem* menu;
 int menuItems = 0;
 
 
-int vectorFind(std::vector<char>v, char c) {
+int vectorFind(std::vector<char> v, char c) {
   for (int i=0;i<v.size();i++) {
     if (v[i]==c)
       return i;
@@ -52,23 +67,34 @@ int vectorFind(std::vector<char>v, char c) {
   return -1;
 }
 
-void printNumber(DECIMAL_TYPE num, int y) {
-  int len = snprintf(NULL, 0, "%f", num);
-  char* text = (char*)malloc(len + 1);
-  snprintf(text, len + 1, "%f", num);
-  
-  int x = SCREEN_WIDTH-(len*FONT_WIDTH);
-  M5Cardputer.Display.drawString(text,x,y);
+void printNumber(NUMBER_TYPE num, int y) {
+  if (numberFormat == BINARY) {
+    char text[BINARY_DIGITS+1];
+    for (int i=0;i<BINARY_DIGITS+1;i++) {
+      text[BINARY_DIGITS-i-1] = (((int)num >> i) & 1) ? '1' : '0';
+    }
+    int x = SCREEN_WIDTH-(BINARY_DIGITS*FONT_WIDTH);
+    M5Cardputer.Display.drawString(text,x,y);
+  } else {
+    // find length of string
+    int len = snprintf(NULL, 0, CURRENT_NUMBER_FORMAT, (numberFormat == HEX ? (int)num : num)); // convert number to int if in hex mode
+    // actually get the string now
+    char* text = (char*)malloc(len + 1);
+    snprintf(text, len + 1, CURRENT_NUMBER_FORMAT, (numberFormat == HEX ? (int)num : num));
+    
+    int x = SCREEN_WIDTH-(len*FONT_WIDTH);
+    M5Cardputer.Display.drawString(text,x,y);
 
-  free(text);
-
+    free(text);
+  }
 }
 
 char* get_mode_string() {
   char* text = (char*)malloc(SCREEN_WIDTH/FONT_WIDTH);
-  sprintf(text,"Mode: [%s%s] Chord: '%c'",
+  sprintf(text,"%s%s %s Chord: '%c'",
     decimalMode ? "DEC " : "",
     usingRadians ? "RAD" : "DEG",
+    NUMBER_FORMAT_NAMES[numberFormat],
     (chord!=0) ? chord : ' '
   );
   return text;
@@ -224,6 +250,29 @@ void onKeyPress(char key) {
             X = tan(X*ANGLE_CONVERT);
             break;
         }
+        break;
+      case CALC_KEY_CHORD_BITWISE:
+        switch (key) {
+          case CALC_KEY_BITWISE_AND:
+            X = (int)Y & (int)X;
+            afterOperation();
+            break;
+          case CALC_KEY_BITWISE_OR:
+            X = (int)Y | (int)X;
+            afterOperation();
+            break;
+          case CALC_KEY_BITWISE_XOR:
+            X = (int)Y ^ (int)X;
+            afterOperation();
+            break;
+          case CALC_KEY_BITWISE_SHIFT_LEFT:
+            X = (int)X << 1;
+            break;
+          case CALC_KEY_BITWISE_SHIFT_RIGHT:
+            X = (int)X >> 1;
+            break;
+        }
+        break;
     }
     chord = 0;
     showingMenu = false;
@@ -240,18 +289,18 @@ void onKeyPress(char key) {
     case '8':
     case '9':
       if (!decimalMode) {
-        DECIMAL_TYPE whole = round(X);
+        NUMBER_TYPE whole = round(X);
         X -= whole; // extract whole part of X
         whole *= 10; // shift to the left
         whole += key - '0'; // add the value represented by the character (kinda weird)
         X += whole; // put the whole part back in X
       } else {
-        DECIMAL_TYPE fract = X - round(X);
+        NUMBER_TYPE fract = X - round(X);
         Serial.print("fract: ");
         Serial.println(fract);
         X -= fract; // extract fractional part out of X
         fract /= 10; // shift to the right
-        fract += (DECIMAL_TYPE)(key - '0')/10.f; // add the value represented by the character (kinda weird)
+        fract += (NUMBER_TYPE)(key - '0')/10.f; // add the value represented by the character (kinda weird)
         Serial.print("new fract: ");
         Serial.println(fract);
         X += fract; // put the fractional part back in X
@@ -262,7 +311,7 @@ void onKeyPress(char key) {
       shiftDown();
       break;
     case CALC_KEY_SWAP: {
-      DECIMAL_TYPE temp = X;
+      NUMBER_TYPE temp = X;
       X = Y;
       Y = temp;
       break;
@@ -298,6 +347,9 @@ void onKeyPress(char key) {
     case CALC_KEY_ANGLE_TOGGLE:
       usingRadians = !usingRadians;
       break;
+    case CALC_KEY_FORMAT_CYCLE:
+      numberFormat = (numberFormat+1)%NUMBER_FORMATS;
+      break;
     case CALC_KEY_CLEAR:
       X = 0;
       break;
@@ -320,6 +372,17 @@ void onKeyPress(char key) {
       addMenuItem(CALC_KEY_TRIG_SINE,"sin");
       addMenuItem(CALC_KEY_TRIG_COSINE,"cos");
       addMenuItem(CALC_KEY_TRIG_TANGENT,"tan");
+      break;
+    case CALC_KEY_CHORD_BITWISE:
+      chord = key;
+      showingMenu = true;
+      initMenu();
+      addMenuItem("Bitwise");
+      addMenuItem(CALC_KEY_BITWISE_AND,"and");
+      addMenuItem(CALC_KEY_BITWISE_OR,"or");
+      addMenuItem(CALC_KEY_BITWISE_XOR,"xor");
+      addMenuItem(CALC_KEY_BITWISE_SHIFT_LEFT,"shift left");
+      addMenuItem(CALC_KEY_BITWISE_SHIFT_RIGHT,"shift right");
       break;
     };
   }

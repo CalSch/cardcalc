@@ -234,7 +234,7 @@ void setup() {
   updateScreen();
 }
 
-void onKeyPress(char key) {
+void onKeyPress(char key, bool ctrl) {
   if (chord != 0) { // Handle chords
     switch (chord) {
       case CALC_KEY_CHORD_CONSTANTS:
@@ -314,133 +314,138 @@ void onKeyPress(char key) {
     showingMenu = false;
   } else {
     switch (key) {
-    case '0':
-    case '1':
-    case '2':
-    case '3':
-    case '4':
-    case '5':
-    case '6':
-    case '7':
-    case '8':
-    case '9':
-      if (!decimalMode) {
-        NUMBER_TYPE whole = floor(X);
-        X -= whole; // extract whole part of X
-        whole *= CURRENT_BASE; // shift to the left
-        whole += key - '0'; // add the value represented by the character (kinda weird)
-        X += whole; // put the whole part back in X
-      } else {
-        NUMBER_TYPE fract = X - floor(X);
-        Serial.print("fract: ");
-        Serial.println(fract);
-        X -= fract; // extract fractional part out of X
-        fract /= 10; // shift to the right
-        fract += (NUMBER_TYPE)(key - '0')/10.f; // add the value represented by the character (kinda weird)
-        Serial.print("new fract: ");
-        Serial.println(fract);
-        X += fract; // put the fractional part back in X
+      case '0':
+      case '1':
+      case '2':
+      case '3':
+      case '4':
+      case '5':
+      case '6':
+      case '7':
+      case '8':
+      case '9':
+        if (!decimalMode) {
+          NUMBER_TYPE whole = floor(X);
+          X -= whole; // extract whole part of X
+          whole *= CURRENT_BASE; // shift to the left
+          whole += key - '0'; // add the value represented by the character (kinda weird)
+          X += whole; // put the whole part back in X
+        } else {
+          NUMBER_TYPE fract = X - floor(X);
+          Serial.print("fract: ");
+          Serial.println(fract);
+          X -= fract; // extract fractional part out of X
+          fract /= 10; // shift to the right
+          fract += (NUMBER_TYPE)(key - '0')/10.f; // add the value represented by the character (kinda weird)
+          Serial.print("new fract: ");
+          Serial.println(fract);
+          X += fract; // put the fractional part back in X
+        }
+        // todo: make this work with decimals
+        break;
+      case CALC_KEY_POP:
+        shiftDown();
+        break;
+      case CALC_KEY_SWAP: {
+        NUMBER_TYPE temp = X;
+        X = Y;
+        Y = temp;
+        break;
       }
-      // todo: make this work with decimals
-      break;
-    case CALC_KEY_POP:
-      shiftDown();
-      break;
-    case CALC_KEY_SWAP: {
-      NUMBER_TYPE temp = X;
-      X = Y;
-      Y = temp;
-      break;
-    }
-    case CALC_KEY_ADD:
-      X += Y;
-      afterOperation();
-      break;
-    case CALC_KEY_SUBTRACT:
-      X = Y - X;
-      afterOperation();
-      break;
-    case CALC_KEY_MULTIPLY:
-      X *= Y;
-      afterOperation();
-      break;
-    case CALC_KEY_DIVIDE:
-      X = Y / X;
-      afterOperation();
-      break;
-    case CALC_KEY_POWER:
-      X = pow(Y, X);
-      afterOperation();
-      break;
-    case CALC_KEY_MODULUS: {
-      X = fmod(Y, X);
-      afterOperation();
-      break;
-    }
-    case CALC_KEY_FACTORIAL:
-      X = (NUMBER_TYPE)factorial((int)X);
-      break;
-    case CALC_KEY_DECIMAL_TOGGLE:
-      decimalMode = !decimalMode;
-      break;
-    case CALC_KEY_ANGLE_TOGGLE:
-      usingRadians = !usingRadians;
-      break;
-    case CALC_KEY_FORMAT_CYCLE:
-      numberFormat = (numberFormat+1)%NUMBER_FORMATS;
-      break;
-    case CALC_KEY_CLEAR:
-      X = 0;
-      break;
-    case CALC_KEY_CLEAR_ALL:
-      clearAll();
-      break;
-    case CALC_KEY_CHORD_CONSTANTS:
-      chord = key;
-      showingMenu = true;
-      initMenu();
-      addMenuItem("Constants");
-      addMenuItem(CALC_KEY_CONSTANT_PI,"pi");
-      addMenuItem(CALC_KEY_CONSTANT_E,"e");
-      break;
-    case CALC_KEY_CHORD_TRIG:
-      chord = key;
-      showingMenu = true;
-      initMenu();
-      addMenuItem("Trigonometry");
-      addMenuItem(CALC_KEY_TRIG_SINE,"sin");
-      addMenuItem(CALC_KEY_TRIG_COSINE,"cos");
-      addMenuItem(CALC_KEY_TRIG_TANGENT,"tan");
-      break;
-    case CALC_KEY_CHORD_BITWISE:
-      chord = key;
-      showingMenu = true;
-      initMenu();
-      addMenuItem("Bitwise");
-      addMenuItem(CALC_KEY_BITWISE_AND,"and");
-      addMenuItem(CALC_KEY_BITWISE_OR,"or");
-      addMenuItem(CALC_KEY_BITWISE_XOR,"xor");
-      addMenuItem(CALC_KEY_BITWISE_NOT,"not");
-      addMenuItem(CALC_KEY_BITWISE_SHIFT_LEFT,"shift left");
-      addMenuItem(CALC_KEY_BITWISE_SHIFT_RIGHT,"shift right");
-      break;
-    case CALC_KEY_CHORD_LOG:
-      chord = key;
-      showingMenu = true;
-      initMenu();
-      addMenuItem("Log");
-      addMenuItem(CALC_KEY_LOG_10,"log(X,10)");
-      addMenuItem(CALC_KEY_LOG_NATURAL,"ln(X)");
-      addMenuItem(CALC_KEY_LOG_2,"log(X,2)");
-      addMenuItem(CALC_KEY_LOG_X,"log(Y,X)");
-      break;
-    case CALC_KEY_CHORD_SETTINGS:
-      chord = key;
-      showingMenu = true;
-      initMenu();
-      addMenuItem("Settings");
-      addMenuItem(CALC_KEY_SETTINGS_BRIGHTNESS,"brightness = X"); 
-      break;
+      case CALC_KEY_RANDOM:
+        X = (float)rand()/(float)RAND_MAX;
+        break;
+      case CALC_KEY_ADD:
+        X += Y;
+        afterOperation();
+        break;
+      case CALC_KEY_SUBTRACT:
+        X = Y - X;
+        afterOperation();
+        break;
+      case CALC_KEY_MULTIPLY:
+        X *= Y;
+        afterOperation();
+        break;
+      case CALC_KEY_DIVIDE:
+        X = Y / X;
+        afterOperation();
+        break;
+      case CALC_KEY_POWER:
+        X = pow(Y, X);
+        afterOperation();
+        break;
+      case CALC_KEY_MODULUS:
+        X = fmod(Y, X);
+        afterOperation();
+        break;
+      case CALC_KEY_FACTORIAL:
+        X = (NUMBER_TYPE)factorial((int)X);
+        break;
+      case CALC_KEY_NEGATE:
+        X = -X;
+        break;
+      case CALC_KEY_DECIMAL_TOGGLE:
+        decimalMode = !decimalMode;
+        break;
+      case CALC_KEY_ANGLE_TOGGLE:
+        usingRadians = !usingRadians;
+        break;
+      case CALC_KEY_FORMAT_CYCLE:
+        numberFormat = (numberFormat+1)%NUMBER_FORMATS;
+        break;
+      case CALC_KEY_CLEAR:
+        X = 0;
+        break;
+      case CALC_KEY_CLEAR_ALL:
+        clearAll();
+        break;
+      case CALC_KEY_CHORD_CONSTANTS:
+        chord = key;
+        showingMenu = true;
+        initMenu();
+        addMenuItem("Constants");
+        addMenuItem(CALC_KEY_CONSTANT_PI,"pi");
+        addMenuItem(CALC_KEY_CONSTANT_E,"e");
+        break;
+      case CALC_KEY_CHORD_TRIG:
+        chord = key;
+        showingMenu = true;
+        initMenu();
+        addMenuItem("Trigonometry");
+        addMenuItem(CALC_KEY_TRIG_SINE,"sin");
+        addMenuItem(CALC_KEY_TRIG_COSINE,"cos");
+        addMenuItem(CALC_KEY_TRIG_TANGENT,"tan");
+        break;
+      case CALC_KEY_CHORD_BITWISE:
+        chord = key;
+        showingMenu = true;
+        initMenu();
+        addMenuItem("Bitwise");
+        addMenuItem(CALC_KEY_BITWISE_AND,"and");
+        addMenuItem(CALC_KEY_BITWISE_OR,"or");
+        addMenuItem(CALC_KEY_BITWISE_XOR,"xor");
+        addMenuItem(CALC_KEY_BITWISE_NOT,"not");
+        addMenuItem(CALC_KEY_BITWISE_SHIFT_LEFT,"shift left");
+        addMenuItem(CALC_KEY_BITWISE_SHIFT_RIGHT,"shift right");
+        break;
+      case CALC_KEY_CHORD_LOG:
+        chord = key;
+        showingMenu = true;
+        initMenu();
+        addMenuItem("Log");
+        addMenuItem(CALC_KEY_LOG_10,"log(X,10)");
+        addMenuItem(CALC_KEY_LOG_NATURAL,"ln(X)");
+        addMenuItem(CALC_KEY_LOG_2,"log(X,2)");
+        addMenuItem(CALC_KEY_LOG_X,"log(Y,X)");
+        break;
+      case CALC_KEY_CHORD_SETTINGS:
+        chord = key;
+        showingMenu = true;
+        initMenu();
+        addMenuItem("Settings");
+        addMenuItem(CALC_KEY_SETTINGS_BRIGHTNESS,"brightness = X"); 
+        break;
     };
   }
 }
@@ -463,7 +468,7 @@ void loop() {
       for (char c : status.word) {
         int idx = vectorFind(lastKeysPressed, tolower(c));
         if (idx==-1) {
-          onKeyPress(c);
+          onKeyPress(c,status.ctrl);
           lastKeysPressed.push_back(c);
         }
       }

@@ -7,12 +7,14 @@
 #define CALC_KEY_POWER    '^'
 #define CALC_KEY_MODULUS  '%'
 #define CALC_KEY_FACTORIAL '!'
+#define CALC_KEY_NEGATE '_'
 
 // Misc operations
-#define CALC_KEY_CLEAR 'c'
+#define CALC_KEY_CLEAR     'c'
 #define CALC_KEY_CLEAR_ALL 'C'
-#define CALC_KEY_POP 'p'
-#define CALC_KEY_SWAP 's'
+#define CALC_KEY_POP       'p'
+#define CALC_KEY_SWAP      's'
+#define CALC_KEY_RANDOM    'r'
 
 // Mode toggles
 #define CALC_KEY_DECIMAL_TOGGLE '.' // Toggle decimal mode

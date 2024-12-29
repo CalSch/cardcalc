@@ -41,6 +41,7 @@
 #define CALC_KEY_BITWISE_SHIFT_RIGHT 'r'
 
 #define CALC_KEY_LOG_10      'l'
+#define CALC_KEY_LOG_2       '2'
 #define CALC_KEY_LOG_X       'x'
 #define CALC_KEY_LOG_NATURAL 'e'
 

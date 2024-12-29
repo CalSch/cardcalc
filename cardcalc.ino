@@ -290,6 +290,9 @@ void onKeyPress(char key) {
           case CALC_KEY_LOG_10:
             X = log10(X);
             break;
+          case CALC_KEY_LOG_2:
+            X = log2(X);
+            break;
           case CALC_KEY_LOG_NATURAL:
             X = log(X);
             break;
@@ -428,6 +431,7 @@ void onKeyPress(char key) {
       addMenuItem("Log");
       addMenuItem(CALC_KEY_LOG_10,"log(X,10)");
       addMenuItem(CALC_KEY_LOG_NATURAL,"ln(X)");
+      addMenuItem(CALC_KEY_LOG_2,"log(X,2)");
       addMenuItem(CALC_KEY_LOG_X,"log(Y,X)");
       break;
     case CALC_KEY_CHORD_SETTINGS:
@@ -435,7 +439,7 @@ void onKeyPress(char key) {
       showingMenu = true;
       initMenu();
       addMenuItem("Settings");
-      addMenuItem(CALC_KEY_SETTINGS_BRIGHTNESS,"brightness = X");
+      addMenuItem(CALC_KEY_SETTINGS_BRIGHTNESS,"brightness = X"); 
       break;
     };
   }

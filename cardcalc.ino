@@ -49,6 +49,8 @@ NUMBER_TYPE Y = 0;
 NUMBER_TYPE Z = 0;
 NUMBER_TYPE T = 0;
 
+NUMBER_TYPE clipboard = 0;
+
 bool decimalMode = false;
 bool usingRadians = true;
 int numberFormat = DECIMAL;
@@ -234,7 +236,7 @@ void setup() {
   updateScreen();
 }
 
-void onKeyPress(char key, bool ctrl) {
+void onKeyPress(char key) {
   if (chord != 0) { // Handle chords
     switch (chord) {
       case CALC_KEY_CHORD_CONSTANTS:
@@ -449,6 +451,24 @@ void onKeyPress(char key, bool ctrl) {
     };
   }
 }
+
+void onCtrlKeyPress(char key) {
+  switch (key) {
+    case CALC_KEY_COPY:
+      clipboard = X;
+      break;
+    case CALC_KEY_PASTE:
+      X = clipboard;
+      break;
+  }
+}
+void onFnKeyPress(char key) {
+  
+}
+void onOptKeyPress(char key) {
+  
+}
+
 void onEnterPress() {
   shiftUp();
 }
@@ -464,11 +484,18 @@ void loop() {
   if (M5Cardputer.Keyboard.isChange()) {
     if (M5Cardputer.Keyboard.isPressed()) {
       Keyboard_Class::KeysState status = M5Cardputer.Keyboard.keysState();
-
+      
       for (char c : status.word) {
         int idx = vectorFind(lastKeysPressed, tolower(c));
         if (idx==-1) {
-          onKeyPress(c,status.ctrl);
+          if (status.ctrl)
+            onCtrlKeyPress(c);
+          else if (status.fn)
+            onFnKeyPress(c);
+          else if (status.opt)
+            onOptKeyPress(c);
+          else
+            onKeyPress(c);
           lastKeysPressed.push_back(c);
         }
       }

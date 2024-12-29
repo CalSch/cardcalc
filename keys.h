@@ -49,3 +49,7 @@
 
 #define CALC_KEY_SETTINGS_BRIGHTNESS 'b'
 
+// ------------ ctrl+[key] actions ------------
+// btw keys are uppercase
+#define CALC_KEY_COPY 'C'
+#define CALC_KEY_PASTE 'V'

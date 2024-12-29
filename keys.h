@@ -21,9 +21,10 @@
 
 // Chord starters
 #define CALC_KEY_CHORD_CONSTANTS 'k' // Opens constants menu
-#define CALC_KEY_CHORD_TRIG 't' // Opens the trig menu
-#define CALC_KEY_CHORD_BITWISE 'b'
-#define CALC_KEY_CHORD_LOG 'l'
+#define CALC_KEY_CHORD_TRIG      't' // Opens the trig menu
+#define CALC_KEY_CHORD_BITWISE   'b'
+#define CALC_KEY_CHORD_LOG       'l'
+#define CALC_KEY_CHORD_SETTINGS  '`'
 
 #define CALC_KEY_CONSTANT_PI 'p'
 #define CALC_KEY_CONSTANT_E  'e'
@@ -39,7 +40,9 @@
 #define CALC_KEY_BITWISE_SHIFT_LEFT  'l'
 #define CALC_KEY_BITWISE_SHIFT_RIGHT 'r'
 
-#define CALC_KEY_LOG_10 'l'
-#define CALC_KEY_LOG_X 'x'
+#define CALC_KEY_LOG_10      'l'
+#define CALC_KEY_LOG_X       'x'
 #define CALC_KEY_LOG_NATURAL 'e'
+
+#define CALC_KEY_SETTINGS_BRIGHTNESS 'b'
 

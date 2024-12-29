@@ -299,6 +299,13 @@ void onKeyPress(char key) {
             break;
         }
         break;
+      case CALC_KEY_CHORD_SETTINGS:
+        switch (key) {
+          case CALC_KEY_SETTINGS_BRIGHTNESS:
+            M5Cardputer.Lcd.setBrightness(X);
+            break;
+        }
+        break;
     }
     chord = 0;
     showingMenu = false;
@@ -422,6 +429,13 @@ void onKeyPress(char key) {
       addMenuItem(CALC_KEY_LOG_10,"log(X,10)");
       addMenuItem(CALC_KEY_LOG_NATURAL,"ln(X)");
       addMenuItem(CALC_KEY_LOG_X,"log(Y,X)");
+      break;
+    case CALC_KEY_CHORD_SETTINGS:
+      chord = key;
+      showingMenu = true;
+      initMenu();
+      addMenuItem("Settings");
+      addMenuItem(CALC_KEY_SETTINGS_BRIGHTNESS,"brightness = X");
       break;
     };
   }

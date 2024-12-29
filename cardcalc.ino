@@ -3,6 +3,7 @@
 #include <cstring>
 #include <vector>
 #include <ctype.h>
+#include <stdio.h>
 
 #define SCREEN_WIDTH 240
 #define SCREEN_HEIGHT 135
@@ -33,8 +34,8 @@ const char* NUMBER_FORMAT_NAMES[] = {"DEC","HEX","BIN"};
 
 #define BINARY_DIGITS 16
 
-#define CURRENT_NUMBER_FORMAT numberFormat==DECIMAL ? DECIMAL_FORMAT : (numberFormat==HEX ? HEX_FORMAT : "uh oh")
-#define CURRENT_BASE numberFormat==DECIMAL ? 10 : (numberFormat==HEX ? 16 : (numberFormat == BINARY ? 2 : 0))
+#define CURRENT_NUMBER_FORMAT (numberFormat==DECIMAL ? DECIMAL_FORMAT : (numberFormat==HEX ? HEX_FORMAT : "uh oh"))
+#define CURRENT_BASE (numberFormat==DECIMAL ? 10 : (numberFormat==HEX ? 16 : (numberFormat == BINARY ? 2 : 0)))
 
 struct MenuItem {
   char* name;
@@ -77,6 +78,10 @@ NUMBER_TYPE factorial(int n) {
   return f;
 }
 
+uint64_t doubleToHex(double d) {
+  return (*(uint64_t*)&d);
+}
+
 
 void printNumber(NUMBER_TYPE num, int y) {
   if (numberFormat == BINARY) {
@@ -86,13 +91,25 @@ void printNumber(NUMBER_TYPE num, int y) {
     }
     int x = SCREEN_WIDTH-(BINARY_DIGITS*FONT_WIDTH);
     M5Cardputer.Display.drawString(text,x,y);
-  } else {
+  } else if (numberFormat == HEX) {
+    int asInt = (int)num;
     // find length of string
-    int len = snprintf(NULL, 0, CURRENT_NUMBER_FORMAT, (numberFormat == HEX ? (int)num : num)); // convert number to int if in hex mode
+    int len = snprintf(NULL, 0, HEX_FORMAT, asInt); // convert number to int if in hex mode
     // actually get the string now
     char* text = (char*)malloc(len + 1);
-    snprintf(text, len + 1, CURRENT_NUMBER_FORMAT, (numberFormat == HEX ? (int)num : num));
-    
+    snprintf(text, len + 1, HEX_FORMAT, asInt);
+
+    int x = SCREEN_WIDTH-(len*FONT_WIDTH);
+    M5Cardputer.Display.drawString(text,x,y);
+
+    free(text);
+  } else if (numberFormat == DECIMAL) {
+    // find length of string
+    int len = snprintf(NULL, 0, DECIMAL_FORMAT, num); // convert number to int if in hex mode
+    // actually get the string now
+    char* text = (char*)malloc(len + 1);
+    snprintf(text, len + 1, DECIMAL_FORMAT, num);
+
     int x = SCREEN_WIDTH-(len*FONT_WIDTH);
     M5Cardputer.Display.drawString(text,x,y);
 
@@ -315,6 +332,12 @@ void onKeyPress(char key) {
     chord = 0;
     showingMenu = false;
   } else {
+    if (numberFormat == HEX) {
+      if (key >= 'A' && key <= 'F') {
+        X *= 16;
+        X += key - 'A' + 10;
+      }
+    }
     switch (key) {
       case '0':
       case '1':
@@ -473,7 +496,7 @@ void onEnterPress() {
   shiftUp();
 }
 void onDeletePress() {
-  X = floor(X/10); // todo: make this work with decimals
+  X = floor(X/CURRENT_BASE); // todo: make this work with decimals
 }
 
 void loop() {

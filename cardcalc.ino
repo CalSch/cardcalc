@@ -29,7 +29,7 @@
 #define NUMBER_FORMATS 3 // remember to update this count after adding a new format
 const char* NUMBER_FORMAT_NAMES[] = {"DEC","HEX","BIN"};
 
-#define DECIMAL_FORMAT "%lf" // either "%f" or "%e", whichever is shortest
+#define DECIMAL_FORMAT "%lf"
 #define HEX_FORMAT "0x%X"
 
 #define BINARY_DIGITS 16
@@ -44,6 +44,9 @@ struct MenuItem {
 };
 struct HistoryItem {
   NUMBER_TYPE X,Y,Z,T;
+  bool usingRadians;
+  int numberFormat;
+  int brightness;
 };
 
 std::vector<char> lastKeysPressed;
@@ -125,12 +128,11 @@ void printNumber(NUMBER_TYPE num, int y) {
 
 char* get_mode_string() {
   char* text = (char*)malloc(SCREEN_WIDTH/FONT_WIDTH);
-  sprintf(text,"%s %s %s Chord: '%c' %d/%d",
+  sprintf(text,"%s %s %s Chord: '%c'",
     decimalMode ? "D" : "W",
     usingRadians ? "RAD" : "DEG",
     NUMBER_FORMAT_NAMES[numberFormat],
-    (chord!=0) ? chord : ' ',
-    undoLevel,calcHistory.size()
+    (chord!=0) ? chord : ' '
   );
   return text;
 }
@@ -240,13 +242,16 @@ int getHistoryIndex() {
   return calcHistory.size()-1-undoLevel;
 }
 HistoryItem storeHistory() {
-  return (HistoryItem){X,Y,Z,T};
+  return (HistoryItem){X,Y,Z,T,usingRadians,numberFormat,M5Cardputer.Display.getBrightness()};
 }
 void loadHistory(HistoryItem h) {
   X=h.X;
   Y=h.Y;
   Z=h.Z;
   T=h.T;
+  usingRadians=h.usingRadians;
+  numberFormat=h.numberFormat;
+  M5Cardputer.Display.setBrightness(h.brightness);
 }
 void undo() {
   if (getHistoryIndex() == 0) { // No more to undo

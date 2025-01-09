@@ -10,5 +10,6 @@ Alternatively, you can download the .bin from the Releases page, then flash it o
 - undo/redo
 - save settings to persistent storage
 - help menu
+- better number input for decimals
 - expression evaluator
     - graphing calculator?

@@ -126,7 +126,7 @@ void printNumber(NUMBER_TYPE num, int y) {
   }
 }
 
-char* get_mode_string() {
+char* getModeString() {
   char* text = (char*)malloc(SCREEN_WIDTH/FONT_WIDTH);
   sprintf(text,"%s %s %s Chord: '%c'",
     decimalMode ? "D" : "W",
@@ -214,7 +214,7 @@ void updateScreen() {
   M5Cardputer.Display.fillRect(0,SCREEN_HEIGHT-FONT_HEIGHT,SCREEN_WIDTH,FONT_HEIGHT,GREEN);
   M5Cardputer.Display.setTextColor(BLACK);
   // M5Cardputer.Display.drawString(":)",0,SCREEN_HEIGHT-FONT_HEIGHT);
-  M5Cardputer.Display.drawString(get_mode_string(),1,SCREEN_HEIGHT-FONT_HEIGHT);
+  M5Cardputer.Display.drawString(getModeString(),1,SCREEN_HEIGHT-FONT_HEIGHT);
   // Serial.print("mode: ");
   // Serial.println(get_mode_string());
   if (showingMenu) drawMenu();
@@ -409,7 +409,7 @@ void onKeyPress(char key) {
     }
     chord = 0;
     showingMenu = false;
-  } else {
+  } else { // Handle normal keys
     if (numberFormat == HEX) {
       if (key >= 'A' && key <= 'F') {
         X *= 16;
@@ -507,6 +507,7 @@ void onKeyPress(char key) {
       case CALC_KEY_CLEAR_ALL:
         clearAll();
         break;
+      // Chord starters:
       case CALC_KEY_CHORD_CONSTANTS:
         chord = key;
         showingMenu = true;

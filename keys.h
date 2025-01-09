@@ -29,6 +29,7 @@
 #define CALC_KEY_CHORD_LOG       'l'
 #define CALC_KEY_CHORD_SETTINGS  '`'
 
+// Chord sub-keys
 #define CALC_KEY_CONSTANT_PI 'p'
 #define CALC_KEY_CONSTANT_E  'e'
 
@@ -54,7 +55,7 @@
 #define CALC_KEY_SETTINGS_BRIGHTNESS 'b'
 
 // ------------ ctrl+[key] actions ------------
-// btw keys are uppercase
+// btw all keys are uppercase
 #define CALC_KEY_UNDO 'Z'
 #define CALC_KEY_REDO 'Y'
 #define CALC_KEY_COPY 'C'

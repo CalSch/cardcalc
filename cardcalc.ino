@@ -478,6 +478,10 @@ void onKeyPress(char key) {
         X = pow(Y, X);
         afterOperation();
         break;
+      case CALC_KEY_ROOT:
+        X = pow(Y,1.0/X);
+        afterOperation();
+        break;
       case CALC_KEY_MODULUS:
         X = fmod(Y, X);
         afterOperation();
@@ -636,5 +640,5 @@ void loop() {
       }
     }
   }
-  // delay(600);
+  delay(20);
 }

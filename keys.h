@@ -5,6 +5,7 @@
 #define CALC_KEY_MULTIPLY '*'
 #define CALC_KEY_DIVIDE   '/'
 #define CALC_KEY_POWER    '^'
+#define CALC_KEY_ROOT     'r'
 #define CALC_KEY_MODULUS  '%'
 #define CALC_KEY_FACTORIAL '!'
 #define CALC_KEY_NEGATE '_'
@@ -14,7 +15,7 @@
 #define CALC_KEY_CLEAR_ALL 'C'
 #define CALC_KEY_POP       'p'
 #define CALC_KEY_SWAP      's'
-#define CALC_KEY_RANDOM    'r'
+#define CALC_KEY_RANDOM    'R'
 
 // Mode toggles
 #define CALC_KEY_DECIMAL_TOGGLE '.' // Toggle decimal mode

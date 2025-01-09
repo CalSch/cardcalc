@@ -42,6 +42,9 @@ struct MenuItem {
   char* value;
   bool noValue;
 };
+struct HistoryItem {
+  NUMBER_TYPE X,Y,Z,T;
+};
 
 std::vector<char> lastKeysPressed;
 
@@ -50,6 +53,9 @@ NUMBER_TYPE Y = 0;
 NUMBER_TYPE Z = 0;
 NUMBER_TYPE T = 0;
 
+int maxHistoryLevel = 30;
+std::vector<HistoryItem> calcHistory;
+int undoLevel = 0;
 NUMBER_TYPE clipboard = 0;
 
 bool decimalMode = false;
@@ -119,11 +125,12 @@ void printNumber(NUMBER_TYPE num, int y) {
 
 char* get_mode_string() {
   char* text = (char*)malloc(SCREEN_WIDTH/FONT_WIDTH);
-  sprintf(text,"%s %s %s Chord: '%c'",
+  sprintf(text,"%s %s %s Chord: '%c' %d/%d",
     decimalMode ? "D" : "W",
     usingRadians ? "RAD" : "DEG",
     NUMBER_FORMAT_NAMES[numberFormat],
-    (chord!=0) ? chord : ' '
+    (chord!=0) ? chord : ' ',
+    undoLevel,calcHistory.size()
   );
   return text;
 }
@@ -229,6 +236,46 @@ void shiftUp() {
   X=0;
 }
 
+int getHistoryIndex() {
+  return calcHistory.size()-1-undoLevel;
+}
+HistoryItem storeHistory() {
+  return (HistoryItem){X,Y,Z,T};
+}
+void loadHistory(HistoryItem h) {
+  X=h.X;
+  Y=h.Y;
+  Z=h.Z;
+  T=h.T;
+}
+void undo() {
+  if (getHistoryIndex() == 0) { // No more to undo
+    return;
+  }
+  undoLevel++;
+  HistoryItem item = calcHistory[getHistoryIndex()];
+  loadHistory(item);
+}
+void redo() {
+  if (undoLevel == 0) { // Nothing to redo
+    return;
+  }
+  undoLevel--;
+  HistoryItem item = calcHistory[getHistoryIndex()];
+  loadHistory(item);
+}
+void addHistory() {
+  if (undoLevel != 0) {
+    for (int i=0;i<undoLevel;i++)
+      calcHistory.pop_back();
+    undoLevel=0;
+  }
+  if (calcHistory.size()>=maxHistoryLevel) {
+    calcHistory.erase(calcHistory.begin());
+  }
+  calcHistory.push_back(storeHistory());
+}
+
 // shiftDown() but different, T=0 and X isn't changed
 void afterOperation() {
   Y=Z;
@@ -251,9 +298,11 @@ void setup() {
   // M5Cardputer.Display.drawString("hello world",0,0);
 
   updateScreen();
+  addHistory();
 }
 
 void onKeyPress(char key) {
+  bool shouldAddToHistory = true;
   if (chord != 0) { // Handle chords
     switch (chord) {
       case CALC_KEY_CHORD_CONSTANTS:
@@ -263,6 +312,9 @@ void onKeyPress(char key) {
             break;
           case CALC_KEY_CONSTANT_E:
             X = E;
+            break;
+          default:
+            shouldAddToHistory = false;
             break;
         };
         break;
@@ -285,6 +337,9 @@ void onKeyPress(char key) {
             break;
           case CALC_KEY_TRIG_INV_TANGENT:
             X = atan(X)/ANGLE_CONVERT;
+            break;
+          default:
+            shouldAddToHistory = false;
             break;
         }
         break;
@@ -311,6 +366,9 @@ void onKeyPress(char key) {
           case CALC_KEY_BITWISE_SHIFT_RIGHT:
             X = (int)X >> 1;
             break;
+          default:
+            shouldAddToHistory = false;
+            break;
         }
         break;
       case CALC_KEY_CHORD_LOG:
@@ -328,12 +386,18 @@ void onKeyPress(char key) {
             X = log(Y) / log(X);
             afterOperation();
             break;
+          default:
+            shouldAddToHistory = false;
+            break;
         }
         break;
       case CALC_KEY_CHORD_SETTINGS:
         switch (key) {
           case CALC_KEY_SETTINGS_BRIGHTNESS:
             M5Cardputer.Lcd.setBrightness(X);
+            break;
+          default:
+            shouldAddToHistory = false;
             break;
         }
         break;
@@ -437,6 +501,7 @@ void onKeyPress(char key) {
       case CALC_KEY_CHORD_CONSTANTS:
         chord = key;
         showingMenu = true;
+        shouldAddToHistory = false;
         initMenu();
         addMenuItem("Constants");
         addMenuItem(CALC_KEY_CONSTANT_PI,"pi");
@@ -445,6 +510,7 @@ void onKeyPress(char key) {
       case CALC_KEY_CHORD_TRIG:
         chord = key;
         showingMenu = true;
+        shouldAddToHistory = false;
         initMenu();
         addMenuItem("Trigonometry");
         addMenuItem(CALC_KEY_TRIG_SINE,"sin");
@@ -457,6 +523,7 @@ void onKeyPress(char key) {
       case CALC_KEY_CHORD_BITWISE:
         chord = key;
         showingMenu = true;
+        shouldAddToHistory = false;
         initMenu();
         addMenuItem("Bitwise");
         addMenuItem(CALC_KEY_BITWISE_AND,"and");
@@ -469,6 +536,7 @@ void onKeyPress(char key) {
       case CALC_KEY_CHORD_LOG:
         chord = key;
         showingMenu = true;
+        shouldAddToHistory = false;
         initMenu();
         addMenuItem("Log");
         addMenuItem(CALC_KEY_LOG_10,"log(X,10)");
@@ -479,21 +547,34 @@ void onKeyPress(char key) {
       case CALC_KEY_CHORD_SETTINGS:
         chord = key;
         showingMenu = true;
+        shouldAddToHistory = false;
         initMenu();
         addMenuItem("Settings");
         addMenuItem(CALC_KEY_SETTINGS_BRIGHTNESS,"brightness = X"); 
         break;
+      default:
+        shouldAddToHistory = false;
+        break;
     };
   }
+  if (shouldAddToHistory)
+    addHistory();
 }
 
 void onCtrlKeyPress(char key) {
   switch (key) {
+    case CALC_KEY_UNDO:
+      undo();
+      break;
+    case CALC_KEY_REDO:
+      redo();
+      break;
     case CALC_KEY_COPY:
       clipboard = X;
       break;
     case CALC_KEY_PASTE:
       X = clipboard;
+      addHistory();
       break;
   }
 }
@@ -506,9 +587,11 @@ void onOptKeyPress(char key) {
 
 void onEnterPress() {
   shiftUp();
+  addHistory();
 }
 void onDeletePress() {
   X = floor(X/CURRENT_BASE); // todo: make this work with decimals
+  addHistory();
 }
 
 void loop() {

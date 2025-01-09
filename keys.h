@@ -54,5 +54,7 @@
 
 // ------------ ctrl+[key] actions ------------
 // btw keys are uppercase
+#define CALC_KEY_UNDO 'Z'
+#define CALC_KEY_REDO 'Y'
 #define CALC_KEY_COPY 'C'
 #define CALC_KEY_PASTE 'V'

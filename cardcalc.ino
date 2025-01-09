@@ -209,15 +209,16 @@ void updateScreen() {
   M5Cardputer.Display.drawString("X=",0,FONT_HEIGHT*3);
   printNumber(X,FONT_HEIGHT*3);
 
-  M5Cardputer.Display.fillRect(0,FONT_HEIGHT*4,SCREEN_WIDTH,1,GREEN);
+  M5Cardputer.Display.fillRect(0,FONT_HEIGHT*4,SCREEN_WIDTH,1,GREEN); // H-line below stack
 
+  if (showingMenu) drawMenu();
+
+  // Mode bar
   M5Cardputer.Display.fillRect(0,SCREEN_HEIGHT-FONT_HEIGHT,SCREEN_WIDTH,FONT_HEIGHT,GREEN);
   M5Cardputer.Display.setTextColor(BLACK);
-  // M5Cardputer.Display.drawString(":)",0,SCREEN_HEIGHT-FONT_HEIGHT);
   M5Cardputer.Display.drawString(getModeString(),1,SCREEN_HEIGHT-FONT_HEIGHT);
   // Serial.print("mode: ");
   // Serial.println(get_mode_string());
-  if (showingMenu) drawMenu();
 }
 
 void clearAll() {

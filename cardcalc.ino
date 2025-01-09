@@ -277,6 +277,15 @@ void onKeyPress(char key) {
           case CALC_KEY_TRIG_TANGENT:
             X = tan(X*ANGLE_CONVERT);
             break;
+          case CALC_KEY_TRIG_INV_SINE:
+            X = asin(X)/ANGLE_CONVERT;
+            break;
+          case CALC_KEY_TRIG_INV_COSINE:
+            X = acos(X)/ANGLE_CONVERT;
+            break;
+          case CALC_KEY_TRIG_INV_TANGENT:
+            X = atan(X)/ANGLE_CONVERT;
+            break;
         }
         break;
       case CALC_KEY_CHORD_BITWISE:
@@ -441,6 +450,9 @@ void onKeyPress(char key) {
         addMenuItem(CALC_KEY_TRIG_SINE,"sin");
         addMenuItem(CALC_KEY_TRIG_COSINE,"cos");
         addMenuItem(CALC_KEY_TRIG_TANGENT,"tan");
+        addMenuItem(CALC_KEY_TRIG_INV_SINE,"asin");
+        addMenuItem(CALC_KEY_TRIG_INV_COSINE,"acos");
+        addMenuItem(CALC_KEY_TRIG_INV_TANGENT,"atan");
         break;
       case CALC_KEY_CHORD_BITWISE:
         chord = key;

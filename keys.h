@@ -34,6 +34,9 @@
 #define CALC_KEY_TRIG_SINE    's'
 #define CALC_KEY_TRIG_COSINE  'c'
 #define CALC_KEY_TRIG_TANGENT 't'
+#define CALC_KEY_TRIG_INV_SINE    'S'
+#define CALC_KEY_TRIG_INV_COSINE  'C'
+#define CALC_KEY_TRIG_INV_TANGENT 'T'
 
 #define CALC_KEY_BITWISE_AND         'a'
 #define CALC_KEY_BITWISE_OR          'o'

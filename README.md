@@ -10,6 +10,9 @@ Alternatively, you can download the .bin from the Releases page, then flash it o
 - [ ] co- trig (secant,cosecant,cotangent, + inverses)
 - [ ] save settings to persistent storage
 - [ ] help menu
+- [ ] alerts (mode bar message that lasts for ~1 second)
+- [ ] battery display
 - [ ] better number input for decimals
 - [ ] expression evaluator
     - [ ] graphing calculator?
+
